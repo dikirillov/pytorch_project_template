@@ -84,7 +84,7 @@ class BaseDataset(Dataset):
         text = data_dict["text"]
         text_encoded = self.text_encoder.encode(text)
 
-        spectrogram = self.get_spectrogram(audio)
+        spectrogram = torchaudio.transforms.AmplitudeToDB()(self.get_spectrogram(audio))
 
         instance_data = {
             "audio": audio,

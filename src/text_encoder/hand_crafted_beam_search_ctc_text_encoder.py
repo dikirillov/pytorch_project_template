@@ -108,9 +108,6 @@ class CTCBeamSearchTextEncoderHandsCrafted(CTCTextEncoder):
             state = dict(self.clean_state(state))
 
         output = [(context, prob) for (context, last), prob in sorted(state.items(), key=lambda x: -x[1])][0][0]
-        print(calc_cer(self.ctc_decode_debug(log_probs), output))
-        print(output)
-        print(self.ctc_decode_debug(log_probs))
         assert calc_cer(self.ctc_decode_debug(log_probs), output) < 0.1, "FAILED BEAM SEARCH"
         print("Test - OK")
         return output

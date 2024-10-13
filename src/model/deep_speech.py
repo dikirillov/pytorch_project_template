@@ -15,7 +15,8 @@ class DeepSpeech2(nn.Module):
         input_channels=1,
         output_channels=4,
         rnn_hidden=512,
-        rnn_layers=10,
+        rnn_layers=4,
+        bidirectional=False
     ):
         """
         Args:
@@ -28,10 +29,7 @@ class DeepSpeech2(nn.Module):
         self.n_feats = n_feats
         self.n_tokens = n_tokens
         self.output_channels = output_channels
-        print(
-            n_feats, n_tokens, input_channels, output_channels, rnn_hidden, rnn_layers
-        )
-
+        
         self.convolutional_part = nn.Sequential(
             nn.Conv2d(input_channels, output_channels, kernel_size=3, padding=1),
             nn.BatchNorm2d(output_channels),
@@ -41,21 +39,19 @@ class DeepSpeech2(nn.Module):
             nn.ReLU(),
         )
 
-        self.rnn = nn.GRU(
+        self.rnn = nn.LSTM(
             input_size=n_feats * output_channels,
             hidden_size=rnn_hidden,
             num_layers=rnn_layers,
             batch_first=True,
+            bidirectional=bidirectional,
         )
 
-        # self.look_ahead = nn.Conv1d(
-        #     in
-        # )
-
-        # self.fully_connected = nn.Linear(
-        #     in_features=n_feats*output_channels,
-        #     out_features=n_tokens
-        # )
+        for name, param in self.rnn.named_parameters():
+            if "bias" in name:
+                torch.nn.init.zeros_(param)
+            else:
+                nn.init.xavier_normal(param)
 
         self.fully_connected = Sequential(
             # people say it can approximate any function...
@@ -77,11 +73,9 @@ class DeepSpeech2(nn.Module):
             output (dict): output dict containing log_probs and
                 transformed lengths.
         """
-
-        output = self.convolutional_part(torch.unsqueeze(spectrogram, dim=1))
+        output = self.convolutional_part(torch.unsqueeze(batch["augmented_spectrogram"], dim=1))
         batch_size, seq_len = output.shape[0], output.shape[-1]
         output = self.rnn(output.permute(0, 3, 1, 2).view(batch_size, seq_len, -1))[0]
-        # output = output.permute(0, 3, 1, 2).view(batch_size, seq_len, -1)
         output = self.fully_connected(output)
 
         log_probs = nn.functional.log_softmax(output, dim=-1)

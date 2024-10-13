@@ -25,17 +25,29 @@ class CTCBeamSearchTextEncoder(CTCTextEncoder):
 
         super().__init__()
         files = download_pretrained_files("librispeech-4-gram")
-        LM_WEIGHT = 3.23
+        LM_WEIGHT = 0
         WORD_SCORE = -0.26
         self.beam_search_decoder = ctc_decoder(
-            lexicon=None,
+            lexicon=self.fix_lexicon(files.lexicon),
             tokens=self.vocab,
-            # lm=files.lm,
-            # lm_weight=LM_WEIGHT,
-            # word_score=WORD_SCORE,
+            lm=files.lm,
+            lm_weight=LM_WEIGHT,
+            word_score=WORD_SCORE,
             blank_token=self.EMPTY_TOK,
-            sil_token="", nbest=1, beam_size=100
+            sil_token=" ", nbest=1, beam_size=10
         )
+    
+    def fix_lexicon(self, lexicon):
+        new_path = "custom_lexicon.txt"
+        new_lexicon = []
+
+        with open(lexicon, "r") as fin:
+            for line in fin.readlines():
+                new_lexicon.append(self.normalize_text(line))
+        
+        with open(new_path, "w") as fout:
+            for line in new_lexicon:
+                print(line, file=fout)
 
     def __len__(self):
         return len(self.vocab)
@@ -75,7 +87,7 @@ class CTCBeamSearchTextEncoder(CTCTextEncoder):
 
             if current_token != self.EMPTY_TOK:
                 output.append(current_token)
-        return "".join(output)
+        return "".join(output).strip()
 
     @staticmethod
     def normalize_text(text: str):

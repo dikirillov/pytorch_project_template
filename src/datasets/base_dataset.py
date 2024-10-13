@@ -89,6 +89,7 @@ class BaseDataset(Dataset):
         instance_data = {
             "audio": audio,
             "spectrogram": spectrogram,
+            "augmented_spectrogram": audio,
             "text": text,
             "text_encoded": text_encoded,
             "audio_path": audio_path,

@@ -1,5 +1,7 @@
 import re
 from string import ascii_lowercase
+from src.text_encoder.ctc_text_encoder import CTCTextEncoder
+from torchaudio.models.decoder import ctc_decoder
 
 import torch
 
@@ -10,24 +12,23 @@ import torch
 # to calculate stuff more efficiently and prettier
 
 
-class CTCTextEncoder:
+class CTCBeamSearchTextEncoder(CTCTextEncoder):
     EMPTY_TOK = ""
 
-    def __init__(self, alphabet=None, **kwargs):
+    def __init__(self, alphabet=None, beam_size=None, **kwargs):
         """
         Args:
             alphabet (list): alphabet for language. If None, it will be
                 set to ascii
         """
 
-        if alphabet is None:
-            alphabet = list(ascii_lowercase + " ")
-
-        self.alphabet = alphabet
-        self.vocab = [self.EMPTY_TOK] + list(self.alphabet)
-
-        self.ind2char = dict(enumerate(self.vocab))
-        self.char2ind = {v: k for k, v in self.ind2char.items()}
+        super().__init__()
+        self.beam_search_decoder = ctc_decoder(
+            lexicon=None,
+            tokens=self.vocab,
+            blank_token=self.EMPTY_TOK,
+            sil_token="", nbest=1, beam_size=10
+        )
 
     def __len__(self):
         return len(self.vocab)
@@ -62,13 +63,11 @@ class CTCTextEncoder:
         output = []
         prev = -1
 
-        for ind in torch.argmax(log_probs, dim=-1).detach().cpu().numpy():
-            if prev != ind:
-                current_token = self.ind2char[ind]
+        for ind in self.beam_search_decoder(log_probs.unsqueeze(0).cpu())[0][0].tokens:
+            current_token = self.ind2char[ind.item()]
 
-                if current_token != self.EMPTY_TOK:
-                    output.append(current_token)
-                prev = ind
+            if current_token != self.EMPTY_TOK:
+                output.append(current_token)
         return "".join(output)
 
     @staticmethod

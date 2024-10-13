@@ -86,8 +86,11 @@ class Trainer(BaseTrainer):
 
     def log_spectrogram(self, spectrogram, **batch):
         spectrogram_for_plot = spectrogram[0].detach().cpu()
-        image = plot_spectrogram(spectrogram_for_plot)
-        self.writer.add_image("spectrogram", image)
+        augmented = batch["augmented_spectrogram"][0].detach().cpu()
+        image_spec = plot_spectrogram(spectrogram_for_plot)
+        image_aug = plot_spectrogram(augmented)
+        self.writer.add_image("spectrogram", image_spec)
+        self.writer.add_image("augmented", image_aug)
 
     def log_predictions(
         self, text, log_probs, log_probs_length, audio_path, examples_to_log=10, **batch
@@ -101,8 +104,12 @@ class Trainer(BaseTrainer):
             inds[: int(ind_len)]
             for inds, ind_len in zip(argmax_inds, log_probs_length.numpy())
         ]
+        log_prob_cutted = [
+            log_prob[: int(ind_len)]
+            for log_prob, ind_len in zip(log_probs, log_probs_length.numpy())
+        ]
         argmax_texts_raw = [self.text_encoder.decode(inds) for inds in argmax_inds]
-        argmax_texts = [self.text_encoder.ctc_decode(inds) for inds in argmax_inds]
+        argmax_texts = [self.text_encoder.ctc_decode(inds) for inds in log_prob_cutted]
         tuples = list(zip(argmax_texts, text, argmax_texts_raw, audio_path))
 
         rows = {}

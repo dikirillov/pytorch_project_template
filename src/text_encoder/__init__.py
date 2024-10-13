@@ -1,1 +1,2 @@
 from src.text_encoder.ctc_text_encoder import CTCTextEncoder
+from src.text_encoder.beam_search_ctc_text_encoder import CTCBeamSearchTextEncoder

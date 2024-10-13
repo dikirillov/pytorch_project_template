@@ -15,7 +15,7 @@ def collate_fn(dataset_items: list[dict]):
             of the tensors.
     """
 
-    keys_to_pad = ["audio", "spectrogram", "text_encoded"]
+    keys_to_pad = ["audio", "spectrogram", "text_encoded", "augmented_spectrogram"]
     keys_to_merge = ["text", "audio_path"]
     seq_lens = [0 for i in range(len(keys_to_pad))]
 

@@ -82,6 +82,7 @@ class BaseTrainer:
             self.epoch_len = len(self.train_dataloader)
         else:
             # iteration-based training
+            print("Dataset size: {length}".format(length=len(self.train_dataloader.dataset)))
             self.train_dataloader = inf_loop(self.train_dataloader)
             self.epoch_len = epoch_len
 

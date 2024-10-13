@@ -1,0 +1,5 @@
+dataset:
+  _target_: src.datasets.CustomDirAudioDataset
+  audio_dir: "data/datasets/custom/audio"
+  transcription_dir: data/datasets/custom/transcriptions
+  instance_transforms: ${transforms.instance_transforms.inference}

@@ -19,11 +19,11 @@ class ArgmaxWERMetric(BaseMetric):
     def __call__(
         self, log_probs: Tensor, log_probs_length: Tensor, text: List[str], **kwargs
     ):
-        wers = []
+        wers_sum = 0
         predictions = torch.argmax(log_probs.cpu(), dim=-1).numpy()
         lengths = log_probs_length.detach().numpy()
-        for log_prob_vec, length, target_text in zip(predictions, lengths, text):
+        for index, (log_prob_vec, length, target_text) in enumerate(zip(predictions, lengths, text)):
             target_text = self.text_encoder.normalize_text(target_text)
-            pred_text = self.text_encoder.ctc_decode(log_prob_vec[:length])
-            wers.append(calc_wer(target_text, pred_text))
-        return sum(wers) / len(wers)
+            pred_text = self.text_encoder.ctc_decode(log_probs[index][:length])
+            wers_sum += calc_wer(target_text, pred_text)
+        return wers_sum / len(predictions)

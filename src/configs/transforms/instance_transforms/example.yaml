@@ -6,7 +6,27 @@ train:
     _target_: torchvision.transforms.v2.Compose
     transforms:
       - _target_: src.transforms.wav_augs.Gain
+  augmented_spectrogram:
+    _target_: torchvision.transforms.v2.Compose
+    transforms:
+      # - _target_: src.transforms.wav_augs.Gain
+      # - _target_: src.transforms.wav_augs.BandPassFilter
+      #   sample_rate: 16000
+      - _target_: src.transforms.wav_augs.Gain
+      - _target_: torchaudio.transforms.MelSpectrogram
+        sample_rate: 16000
+      - _target_: torchaudio.transforms.AmplitudeToDB
+      - _target_: torchaudio.transforms.FrequencyMasking
+        freq_mask_param: 20
+      # - _target_: torchaudio.transforms.TimeMasking
+      #   time_mask_param: 20
 inference:
   get_spectrogram:
     _target_: torchaudio.transforms.MelSpectrogram
     sample_rate: 16000
+  augmented_spectrogram:
+    _target_: torchvision.transforms.v2.Compose
+    transforms:
+      - _target_: torchaudio.transforms.MelSpectrogram
+        sample_rate: 16000
+      - _target_: torchaudio.transforms.AmplitudeToDB

@@ -14,6 +14,7 @@ editdistance
 wget
 KenLM
 flashlight-text
+collections
 
 black
 isort

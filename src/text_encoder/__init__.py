@@ -1,2 +1,3 @@
 from src.text_encoder.ctc_text_encoder import CTCTextEncoder
 from src.text_encoder.beam_search_ctc_text_encoder import CTCBeamSearchTextEncoder
+from src.text_encoder.hand_crafted_beam_search_ctc_text_encoder import CTCBeamSearchTextEncoderHandsCrafted

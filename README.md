@@ -8,72 +8,28 @@
   <a href="#license">License</a>
 </p>
 
-## About
+## Результаты
 
-This repository contains a template for solving ASR task with PyTorch. This template branch is a part of the [HSE DLA course](https://github.com/markovka17/dla) ASR homework. Some parts of the code are missing (or do not follow the most optimal design choices...) and students are required to fill these parts themselves (as well as writing their own models, etc.).
+| Test | CER | WER |
+| ------------- | ------------- | ------------- |
+| Clean | 0.065 | 0.214 | 
+| Noisy | 0.170 | 0.432 |
 
-See the task assignment [here](https://github.com/markovka17/dla/tree/2024/hw1_asr).
+## Команды
 
-## Installation
+Запуск лучшего сетапа обучения
+`HYDRA_FULL_ERROR=1 python3 train.py -cn=baseline trainer.override=True writer=wandb datasets.train.part=train_all model=deep_speech writer.run_name="DEEPSPEECH_PRETRAIN_augs_gain_freq_20_lr_1e_3_n_feats_128_out_4_hidden_512_layers_4_100k_32_batches" lr_scheduler.max_lr=1e-3 trainer.epoch_len=2000 trainer.log_step=5000 dataloader.batch_size=32 trainer.save_period=10 writer.log_checkpoints=True`
 
-Follow these steps to install the project:
+Запуск инференса:
 
-0. (Optional) Create and activate new environment using [`conda`](https://conda.io/projects/conda/en/latest/user-guide/getting-started.html) or `venv` ([`+pyenv`](https://github.com/pyenv/pyenv)).
+`HYDRA_FULL_ERROR=1 python3 inference.py -cn=inference model=deep_speech datasets=example  inferencer.from_pretrained="/home/dikirillov/study/pytorch_project_template/saved/DEEPSPEECH_PRETRAIN_augs_gain_freq_20_lr_1e_3_n_feats_128_out_4_hidden_512_layers_4_100k_32_batches/checkpoint-epoch50.pth" dataloader.batch_size=32 text_encoder._target_=src.text_encoder.CTCTextEncoder`
 
-   a. `conda` version:
+Рассчитать метрики Wer и Cer
 
-   ```bash
-   # create env
-   conda create -n project_env python=PYTHON_VERSION
+`python calc_metrics.py -cn=calc_metrics`
 
-   # activate env
-   conda activate project_env
-   ```
+управляется опциями `predictions_dir` и `/home/dikirillov/study/pytorch_project_template/data/test_metrics/ground_truth`
 
-   b. `venv` (`+pyenv`) version:
+Сравнить работу нашего бим серча и работу бим серча из торча
 
-   ```bash
-   # create env
-   ~/.pyenv/versions/PYTHON_VERSION/bin/python3 -m venv project_env
-
-   # alternatively, using default python version
-   python3 -m venv project_env
-
-   # activate env
-   source project_env
-   ```
-
-1. Install all required packages
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-2. Install `pre-commit`:
-   ```bash
-   pre-commit install
-   ```
-
-## How To Use
-
-To train a model, run the following command:
-
-```bash
-python3 train.py -cn=CONFIG_NAME HYDRA_CONFIG_ARGUMENTS
-```
-
-Where `CONFIG_NAME` is a config from `src/configs` and `HYDRA_CONFIG_ARGUMENTS` are optional arguments.
-
-To run inference (evaluate the model or save predictions):
-
-```bash
-python3 inference.py HYDRA_CONFIG_ARGUMENTS
-```
-
-## Credits
-
-This repository is based on a [PyTorch Project Template](https://github.com/Blinorot/pytorch_project_template).
-
-## License
-
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](/LICENSE)
+`HYDRA_FULL_ERROR=1 python3 inference.py -cn=inference model=deep_speech datasets=customdir  inferencer.from_pretrained="//home/dikirillov/study/pytorch_project_template/saved/Gain_only/model_best.pth" dataloader.batch_size=3 text_encoder._target_=src.text_encoder.CTCBeamSearchTextEncoderHandsCrafted`

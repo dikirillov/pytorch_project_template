@@ -15,6 +15,8 @@
 | Clean | 0.065 | 0.214 | 
 | Noisy | 0.170 | 0.432 |
 
+[Отчет](https://www.comet.com/dikirillov/pytorch-template-asr-example/notes)
+
 ## Команды
 
 Запуск лучшего сетапа обучения

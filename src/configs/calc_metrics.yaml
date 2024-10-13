@@ -1,0 +1,2 @@
+predictions_dir: "/home/dikirillov/study/pytorch_project_template/data/test_metrics/predictions"
+ground_truth_dir: "/home/dikirillov/study/pytorch_project_template/data/test_metrics/ground_truth"

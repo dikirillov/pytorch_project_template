@@ -7,7 +7,7 @@ from hydra.utils import instantiate
 from src.datasets.data_utils import get_dataloaders
 from src.trainer import Inferencer
 from src.utils.init_utils import set_random_seed
-from src.utils.io_utils import ROOT_PATH
+from pathlib import Path
 
 warnings.filterwarnings("ignore", category=UserWarning)
 
@@ -35,9 +35,12 @@ def main(config):
     # setup data_loader instances
     # batch_transforms should be put on device
     dataloaders, batch_transforms = get_dataloaders(config, text_encoder, device)
+    batch_transforms = config.transforms
 
     # build model architecture, then print to console
     model = instantiate(config.model, n_tokens=len(text_encoder)).to(device)
+    model.load_state_dict(torch.load(config.inferencer.from_pretrained)["state_dict"])
+    model.eval()
     print(model)
 
     # get metrics
@@ -49,7 +52,7 @@ def main(config):
         )
 
     # save_path for model predictions
-    save_path = ROOT_PATH / "data" / "saved" / config.inferencer.save_path
+    save_path = Path(config.inferencer.save_path)
     save_path.mkdir(exist_ok=True, parents=True)
 
     inferencer = Inferencer(
